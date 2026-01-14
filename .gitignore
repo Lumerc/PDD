@@ -1,27 +1,58 @@
-*.log
-.DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
+# Laravel
 /node_modules
-/public/build
 /public/hot
 /public/storage
+/public/build
 /storage/*.key
-/storage/pail
 /vendor
+.env
+.env.production
+.env.backup
+.phpunit.result.cache
+.config/
+.local/
 Homestead.json
 Homestead.yaml
-Thumbs.db
-/storage/oauth-*.key
-*.env.*.local
+npm-debug.log
+yarn-error.log
+.lesshst
+
+# Docker
 docker-compose.override.yml
+
+# IDE
+/.idea
+/.vscode
+/.nova
+.DS_Store
+Thumbs.db
+
+# OS
+.bash_history
+.bashrc
+.profile
+
+# Cache
+.cache/
+.npm/
+.phpunit.cache
+composer.lock
+
+# Logs
+*.log
+/storage/logs/
+
+# Laravel specific
+/bootstrap/cache/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+
+# Testing
+/coverage
+
+# Development
+_ide_helper.php
+_ide_helper_models.php
+.phpstorm.meta.php
+*.phpstorm.meta.php

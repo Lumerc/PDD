@@ -12,6 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(\App\Http\Middleware\HandleInertiaRequests::class);
+
+        $middleware->alias([
+            'auth' => \App\Http\Middleware\Authenticate::class,
+            // ... другие middleware
+        ]);
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
