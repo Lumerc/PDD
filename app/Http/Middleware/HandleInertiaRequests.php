@@ -26,6 +26,12 @@ class HandleInertiaRequests extends Middleware
                     'email' => $request->user()->email,
                 ] : null,
             ],
+            'flash' => function () use ($request) {
+                return [
+                    'success' => $request->session()->get('success'),
+                    'error' => $request->session()->get('error'),
+                ];
+            },
             'errors' => function () use ($request) {
                 return $request->session()->get('errors')
                     ? $request->session()->get('errors')->getBag('default')->getMessages()

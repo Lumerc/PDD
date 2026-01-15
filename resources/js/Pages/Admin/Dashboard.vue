@@ -1,70 +1,68 @@
 <template>
-  <div class="admin-dashboard">
-    <header class="dashboard-header">
-      <h1>Панель управления</h1>
-      <div class="user-info">
-        <span>Привет, {{ auth.user.name }}!</span>
-        <form @submit.prevent="logout" class="logout-form">
-          <button type="submit" class="logout-btn">Выйти</button>
-        </form>
-      </div>
-    </header>
+  <AdminLayout>
+    <div class="admin-dashboard">
+      <main class="dashboard-content">
+        <div class="welcome-section">
+          <h2>Добро пожаловать в админ-панель PDD</h2>
+          <p>Вы вошли как <strong>{{ auth.user.email }}</strong></p>
+          <p class="user-id">ID пользователя: {{ auth.user.id }}</p>
+        </div>
 
-    <main class="dashboard-content">
-      <div class="welcome-section">
-        <h2>Добро пожаловать в админ-панель PDD</h2>
-        <p>Вы вошли как <strong>{{ auth.user.email }}</strong></p>
-        <p class="user-id">ID пользователя: {{ auth.user.id }}</p>
-      </div>
-
-      <div class="stats-cards">
-        <div class="card">
-          <h3>👤 Ваш профиль</h3>
-          <div class="profile-info">
-            <p><strong>Имя:</strong> {{ auth.user.name }}</p>
-            <p><strong>Email:</strong> {{ auth.user.email }}</p>
-            <p><strong>Аккаунт создан:</strong> {{ auth.user.created_at }}</p>
+        <div class="stats-cards">
+          <div class="card">
+            <h3>👤 Ваш профиль</h3>
+            <div class="profile-info">
+              <p><strong>Имя:</strong> {{ auth.user.name }}</p>
+              <p><strong>Email:</strong> {{ auth.user.email }}</p>
+              <p><strong>Аккаунт создан:</strong> {{ auth.user.created_at }}</p>
+            </div>
+          </div>
+          
+          <div class="card">
+            <h3>📊 Статистика</h3>
+            <p class="count">0</p>
+            <small>Всего страниц (скоро)</small>
+          </div>
+          
+          <div class="card">
+            <h3>⚡ Быстрые ссылки</h3>
+            <div class="quick-links">
+              <Link :href="route('admin.pages.index')" class="action-card">
+                <h4>📄 Управление страницами</h4>
+                <p>Создание и редактирование страниц</p>
+              </Link>
+              <div class="action-card">
+                <h4>👥 Пользователи</h4>
+                <p>Управление администраторами (скоро)</p>
+              </div>
+              <div class="action-card">
+                <h4>⚙️ Настройки</h4>
+                <p>Настройки сайта (скоро)</p>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <div class="card">
-          <h3>📊 Статистика</h3>
-          <p class="count">0</p>
-          <small>Всего страниц (скоро)</small>
-        </div>
-        
-        <div class="card">
-          <h3>⚡ Быстрые ссылки</h3>
-          <div class="quick-links">
-            <a href="#" class="link">Управление страницами</a>
-            <a href="#" class="link">Добавить новую страницу</a>
-            <a href="#" class="link">Настройки профиля</a>
+
+        <div class="recent-activity">
+          <h3>Последние действия</h3>
+          <div class="activity-list">
+            <div class="activity-item">
+              <span class="time">Сегодня, {{ currentTime }}</span>
+              <span>Успешный вход в систему</span>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
 
-      <div class="recent-activity">
-        <h3>Последние действия</h3>
-        <div class="activity-list">
-          <div class="activity-item">
-            <span class="time">Сегодня, {{ currentTime }}</span>
-            <span>Успешный вход в систему</span>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <footer class="dashboard-footer">
-      <p>© {{ currentYear }} Админ-панель "Правила дорожного движения"</p>
-    </footer>
-  </div>
+    </div>
+  </AdminLayout>
 </template>
 
 <script setup>
-import { useForm } from '@inertiajs/vue3'
+import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { useForm, Link } from '@inertiajs/vue3'
 import { computed } from 'vue'
 import { route } from 'ziggy-js'
-import { Ziggy } from '../../ziggy'
 
 const props = defineProps({
   auth: {
@@ -90,25 +88,6 @@ const logout = () => {
 <style scoped>
 .admin-dashboard {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-.dashboard-header {
-  background: white;
-  padding: 1rem 2rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.dashboard-header h1 {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 1.5rem;
 }
 
 .user-info {
@@ -120,27 +99,6 @@ const logout = () => {
 .user-info span {
   color: #34495e;
   font-weight: 500;
-}
-
-.logout-form {
-  margin: 0;
-}
-
-.logout-btn {
-  padding: 0.5rem 1.5rem;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.logout-btn:hover {
-  background: #c0392b;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
 }
 
 .dashboard-content {
@@ -225,18 +183,40 @@ const logout = () => {
   gap: 0.75rem;
 }
 
-.link {
-  color: #3498db;
-  text-decoration: none;
-  padding: 0.5rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+.quick-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.link:hover {
-  background: #ebf5fb;
-  color: #2980b9;
-  padding-left: 1rem;
+/* Вместо .link используем .action-card */
+.action-card {
+  display: block;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 2px solid transparent;
+}
+
+.action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  border-color: #3498db;
+}
+
+.action-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: #3498db;
+}
+
+.action-card p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
 }
 
 .recent-activity {
@@ -270,14 +250,6 @@ const logout = () => {
 .time {
   color: #7f8c8d;
   font-size: 0.9rem;
-}
-
-.dashboard-footer {
-  text-align: center;
-  padding: 2rem;
-  color: #7f8c8d;
-  margin-top: 3rem;
-  border-top: 1px solid #ecf0f1;
 }
 
 /* Анимация появления */

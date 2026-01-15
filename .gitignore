@@ -5,6 +5,7 @@
 /public/build
 /storage/*.key
 /vendor
+/.ssh
 .env
 .env.production
 .env.backup
