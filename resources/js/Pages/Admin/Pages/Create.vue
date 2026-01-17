@@ -30,16 +30,63 @@
           <div v-if="form.errors.slug" class="error">{{ form.errors.slug }}</div>
         </div>
 
+        <div class="form-row">
+          <div class="form-group">
+            <label for="parent_id">Родительский элемент</label>
+            <select v-model="form.parent_id" id="parent_id" class="form-control">
+              <option value="">--- Глава (верхний уровень) ---</option>
+              
+              <!-- Главы (уровень 0) -->
+              <optgroup label="Главы">
+                <option v-for="chapter in chapters" :value="chapter.id">
+                  {{ getChapterNumber(chapter) }}. {{ chapter.title }}
+                </option>
+              </optgroup>
+              
+              <!-- Пункты (уровень 1) -->
+              <optgroup label="Пункты">
+                <option v-for="point in points" :value="point.id">
+                  {{ getPointNumber(point) }}. {{ point.title }}
+                </option>
+              </optgroup>
+            </select>
+            <small v-if="form.parent_id">
+              Будет создан как 
+              <span v-if="selectedParentLevel === 0">пункт</span>
+              <span v-if="selectedParentLevel === 1">подпункт</span>
+              выбранного элемента
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="sort">Порядок (меньше = выше)</label>
+            <input v-model="form.sort" type="number" min="0" class="form-control">
+          </div>
+        </div>
+
         <div class="form-group">
           <label for="content">Содержимое *</label>
-          <textarea 
-            v-model="form.content" 
-            id="content" 
-            rows="10" 
-            class="form-control"
-            :class="{ 'is-invalid': form.errors.content }"
-            placeholder="Текст страницы..."
-          ></textarea>
+          <Editor
+              v-model="form.content"
+              api-key="qztfxya46u353ocwf0hou6s42jbmnj5ulqtoxrritdmqy9f7"
+              :init="{
+                toolbar_mode: 'sliding',
+                plugins: [
+                  // Core editing features
+                  'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+                  
+                ],
+                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+                tinycomments_mode: 'embedded',
+                tinycomments_author: 'Author name',
+                mergetags_list: [
+                  { value: 'First.Name', title: 'First Name' },
+                  { value: 'Email', title: 'Email' },
+                ],
+                ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+                uploadcare_public_key: 'd6e287e47637d3567605',
+              }"
+              />
           <div v-if="form.errors.content" class="error">{{ form.errors.content }}</div>
         </div>
 
@@ -89,6 +136,9 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
+
+import Editor from '@tinymce/tinymce-vue'
+
 const form = useForm({
   title: '',
   slug: '',

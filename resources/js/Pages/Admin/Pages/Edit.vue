@@ -30,16 +30,50 @@
           <div v-if="form.errors.slug" class="error">{{ form.errors.slug }}</div>
         </div>
 
+        <div class="form-row">
+          <div class="form-group">
+            <label for="parent_id">Родительский элемент</label>
+            <select v-model="form.parent_id" id="parent_id" class="form-control">
+              <option value="">--- Глава (верхний уровень) ---</option>
+              
+              <!-- Главы (уровень 0) -->
+              <optgroup label="Главы">
+                <option v-for="chapter in chapters" :value="chapter.id">
+                  {{ getChapterNumber(chapter) }}. {{ chapter.title }}
+                </option>
+              </optgroup>
+              
+              <!-- Пункты (уровень 1) -->
+              <optgroup label="Пункты">
+                <option v-for="point in points" :value="point.id">
+                  {{ getPointNumber(point) }}. {{ point.title }}
+                </option>
+              </optgroup>
+            </select>
+            <small v-if="form.parent_id">
+              Будет создан как 
+              <span v-if="selectedParentLevel === 0">пункт</span>
+              <span v-if="selectedParentLevel === 1">подпункт</span>
+              выбранного элемента
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="sort">Порядок (меньше = выше)</label>
+            <input v-model="form.sort" type="number" min="0" class="form-control">
+          </div>
+        </div>
+
         <div class="form-group">
           <label for="content">Содержимое *</label>
-          <textarea 
-            v-model="form.content" 
-            id="content" 
-            rows="10" 
-            class="form-control"
-            :class="{ 'is-invalid': form.errors.content }"
-            placeholder="Текст страницы..."
-          ></textarea>
+          
+          <Editor
+            v-model="form.content"
+            :init="tinyMCEConfig"
+            api-key="qztfxya46u353ocwf0hou6s42jbmnj5ulqtoxrritdmqy9f7"
+          />
+          
+          
           <div v-if="form.errors.content" class="error">{{ form.errors.content }}</div>
         </div>
 
@@ -89,28 +123,167 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
+import Editor from '@tinymce/tinymce-vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps({
-  page: Object
+  page: Object,
+  chapters: Array,
+  points: Array
 })
 
 const form = useForm({
   title: props.page.title,
   slug: props.page.slug,
   content: props.page.content,
+  parent_id: props.page.parent_id,
+  sort: props.page.sort,
   meta_title: props.page.meta_title,
   meta_description: props.page.meta_description,
   is_published: props.page.is_published
 })
 
+// Определяем уровень выбранного родителя
+const selectedParentLevel = computed(() => {
+  if (!form.parent_id) return null
+  
+  const parent = [...props.chapters, ...props.points]
+    .find(item => item.id == form.parent_id)
+  
+  return parent ? parent.level : null
+})
+
+// Конфигурация TinyMCE - РАБОЧИЙ ВАРИАНТ
+const tinyMCEConfig = ref({
+  height: 600,
+  menubar: true,
+  toolbar: 'undo redo | formatselect | ' +
+           'bold italic underline strikethrough | ' +
+           'alignleft aligncenter alignright alignjustify | ' +
+           'bullist numlist outdent indent | ' +
+           'link image media table | ' +
+           'removeformat preview code help',
+  
+  plugins: [
+    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+    'insertdatetime', 'media', 'table', 'help', 'wordcount'
+  ],
+  
+  // САМЫЙ НАДЕЖНЫЙ обработчик загрузки (XHR вместо fetch)
+  images_upload_handler: function (blobInfo, success, failure) {
+    const xhr = new XMLHttpRequest()
+    const formData = new FormData()
+    
+    formData.append('file', blobInfo.blob(), blobInfo.filename())
+    
+    // CSRF токен для Laravel
+    const token = document.querySelector('meta[name="csrf-token"]')
+    if (token) {
+      formData.append('_token', token.content)
+    }
+    
+    xhr.open('POST', route('admin.upload'))
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+    
+    xhr.onload = function() {
+      if (xhr.status !== 200) {
+        failure('HTTP Error: ' + xhr.status)
+        return
+      }
+      
+      let json
+      try {
+        json = JSON.parse(xhr.responseText)
+      } catch (e) {
+        failure('Invalid JSON response')
+        return
+      }
+      
+      if (json.location) {
+        success(json.location)
+      } else if (json.error) {
+        failure(json.error)
+      } else {
+        failure('Unknown error')
+      }
+    }
+    
+    xhr.onerror = function() {
+      failure('Network error')
+    }
+    
+    xhr.send(formData)
+  },
+  
+  // Базовые настройки изображений
+  automatic_uploads: true,
+  images_upload_url: route('admin.upload'),
+  file_picker_types: 'image',
+  images_reuse_filename: false,
+  
+  // Стили контента
+  content_style: `
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-size: 16px; 
+      line-height: 1.6;
+      color: #1a202c;
+      padding: 10px;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: #2d3748;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.25em; }
+    p { margin-bottom: 1em; }
+    img { max-width: 100%; height: auto; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+    th { background-color: #f7fafc; font-weight: 600; }
+    td, th { border: 1px solid #e2e8f0; padding: 8px 12px; }
+    ul, ol { padding-left: 2em; margin: 1em 0; }
+    a { color: #3182ce; text-decoration: underline; }
+    blockquote { 
+      border-left: 4px solid #e2e8f0; 
+      margin: 1.5em 0; 
+      padding: 0.5em 1em; 
+      color: #4a5568;
+    }
+  `,
+  
+  // Дополнительные настройки
+  branding: false,
+  elementpath: false,
+  statusbar: true,
+  convert_urls: false,
+  relative_urls: false,
+  remove_script_host: false
+})
+
 const submit = () => {
   form.put(route('admin.pages.update', props.page.id))
+}
+
+// Вспомогательные функции для нумерации
+function getChapterNumber(chapter) {
+  return chapter.sort ? chapter.sort.toString().padStart(2, '0') : '00'
+}
+
+function getPointNumber(point) {
+  if (!point.parent) return '?'
+  
+  const chapterNum = getChapterNumber(point.parent)
+  const pointNum = point.sort ? point.sort.toString().padStart(2, '0') : '00'
+  return `${chapterNum}.${pointNum}`
 }
 </script>
 
 <style scoped>
 .page-form {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -132,26 +305,39 @@ const submit = () => {
   gap: 20px;
 }
 
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .form-control {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
 }
 
 .form-control.is-invalid {
-  border-color: #dc3545;
+  border-color: #fc8181;
 }
 
 .error {
-  color: #dc3545;
+  color: #fc8181;
   font-size: 14px;
   margin-top: 5px;
 }
 
 small {
-  color: #666;
+  color: #718096;
   font-size: 12px;
   display: block;
   margin-top: 5px;
@@ -162,14 +348,53 @@ small {
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  user-select: none;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 15px;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #4299e1;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #3182ce;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-secondary:hover {
+  background-color: #cbd5e0;
 }
 </style>
