@@ -42,6 +42,7 @@ class HandleInertiaRequests extends Middleware
                     'location' => $request->url(),
                 ]);
             },
+            'tinymce_key' => config('services.tinymce.key', ''),
         ]);
     }
 }

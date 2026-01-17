@@ -70,7 +70,7 @@
           <Editor
             v-model="form.content"
             :init="tinyMCEConfig"
-            api-key="qztfxya46u353ocwf0hou6s42jbmnj5ulqtoxrritdmqy9f7"
+            :api-key="tinymceKey"
           />
           
           
@@ -120,17 +120,22 @@
 </template>
 
 <script setup>
+import { usePage } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import Editor from '@tinymce/tinymce-vue'
 import { ref, computed } from 'vue'
 
+const page = usePage();
+
 const props = defineProps({
   page: Object,
   chapters: Array,
   points: Array
 })
+
+const tinymceKey = page.props.tinymce_key;
 
 const form = useForm({
   title: props.page.title,
@@ -143,7 +148,7 @@ const form = useForm({
   is_published: props.page.is_published
 })
 
-// Определяем уровень выбранного родителя
+
 const selectedParentLevel = computed(() => {
   if (!form.parent_id) return null
   
@@ -153,7 +158,7 @@ const selectedParentLevel = computed(() => {
   return parent ? parent.level : null
 })
 
-// Конфигурация TinyMCE - РАБОЧИЙ ВАРИАНТ
+
 const tinyMCEConfig = ref({
   height: 600,
   menubar: true,
@@ -170,7 +175,6 @@ const tinyMCEConfig = ref({
     'insertdatetime', 'media', 'table', 'help', 'wordcount'
   ],
   
-  // САМЫЙ НАДЕЖНЫЙ обработчик загрузки (XHR вместо fetch)
   images_upload_handler: function (blobInfo, success, failure) {
     const xhr = new XMLHttpRequest()
     const formData = new FormData()
@@ -216,13 +220,12 @@ const tinyMCEConfig = ref({
     xhr.send(formData)
   },
   
-  // Базовые настройки изображений
+
   automatic_uploads: true,
   images_upload_url: route('admin.upload'),
   file_picker_types: 'image',
   images_reuse_filename: false,
   
-  // Стили контента
   content_style: `
     body { 
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
