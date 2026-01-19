@@ -48,7 +48,7 @@ composer.lock
 /storage/framework/cache/
 /storage/framework/sessions/
 /storage/framework/views/
-
+/resources/js/ziggy.js
 # Testing
 /coverage
 
