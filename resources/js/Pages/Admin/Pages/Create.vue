@@ -34,18 +34,18 @@
           <div class="form-group">
             <label for="parent_id">Родительский элемент</label>
             <select v-model="form.parent_id" id="parent_id" class="form-control">
-              <option value="">--- Глава (верхний уровень) ---</option>
+              <option :value="null">--- Глава (верхний уровень) ---</option>
               
               <!-- Главы (уровень 0) -->
               <optgroup label="Главы">
-                <option v-for="chapter in chapters" :value="chapter.id">
+                <option v-for="chapter in chapters" :key="chapter.id" :value="chapter.id">
                   {{ getChapterNumber(chapter) }}. {{ chapter.title }}
                 </option>
               </optgroup>
               
               <!-- Пункты (уровень 1) -->
               <optgroup label="Пункты">
-                <option v-for="point in points" :value="point.id">
+                <option v-for="point in points" :key="point.id"  :value="point.id">
                   {{ getPointNumber(point) }}. {{ point.title }}
                 </option>
               </optgroup>
@@ -94,6 +94,16 @@
               class="form-control"
             ></textarea>
           </div>
+
+          <div class="form-group">
+            <label for="menu_html">Меню пункта</label>
+            <textarea 
+              v-model="form.menu_html" 
+              id="menu_html" 
+              rows="6" 
+              class="form-control"
+            ></textarea>
+          </div>
         </div>
 
         <div class="form-group">
@@ -122,9 +132,18 @@ import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { Link, useForm } from '@inertiajs/vue3'
 import { route } from 'ziggy-js'
 import Editor from '@tinymce/tinymce-vue'
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 
 const page = usePage();
+
+const props = defineProps({
+  page: Object,
+  chapters: Array,
+  points: Array,
+  parent_id: Number
+})
+
+const initialParentId = props.parent_id === 0 ? null : props.parent_id;
 
 const tinymceKey = page.props.tinymce_key;
 
@@ -239,12 +258,16 @@ const tinyMCEConfig = ref({
 const selectedParentLevel = computed(() => {
   if (!form.parent_id) return null
   
-  const parent = [...props.chapters, ...props.points]
-    .find(item => item.id == form.parent_id)
+  // Ищем в главах
+  const foundChapter = props.chapters.find(ch => ch.id == form.parent_id)
+  if (foundChapter) return 0
   
-  return parent ? parent.level : null
+  // Ищем в пунктах
+  const foundPoint = props.points.find(pt => pt.id == form.parent_id)
+  if (foundPoint) return 1
+  
+  return null
 })
-
 
 function getChapterNumber(chapter) {
   return chapter.sort ? chapter.sort.toString().padStart(2, '0') : '00'
@@ -263,6 +286,8 @@ const form = useForm({
   slug: '',
   content: '',
   meta_title: '',
+  menu_html: '',
+  parent_id: initialParentId,
   meta_description: '',
   is_published: true
 })
@@ -270,6 +295,7 @@ const form = useForm({
 const submit = () => {
   form.post(route('admin.pages.store'))
 }
+
 </script>
 
 <style scoped>

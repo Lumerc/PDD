@@ -39,7 +39,7 @@ class PageController extends Controller
         $points = Page::whereIn('parent_id', $chapters->pluck('id'))
                     ->orderBy('sort')
                     ->get();
-        
+
         return Inertia::render('Admin/Pages/Create', [
             'chapters' => $chapters,
             'points' => $points,
@@ -56,6 +56,8 @@ class PageController extends Controller
             'content' => 'required|string',
             'menu_html' => 'nullable|string',
             'sort' => 'integer|min:0',
+            'meta_title' => 'nullable|string',
+            'meta_description' => 'nullable|string',
             'is_published' => 'boolean'
         ]);
         
@@ -80,7 +82,18 @@ class PageController extends Controller
     // Форма редактирования
     public function edit(Page $page)
     {
+        // Получаем возможных родителей для выпадающего списка
+        $chapters = Page::where('parent_id', null)
+                        ->orderBy('sort')
+                        ->get();
+        
+        $points = Page::whereIn('parent_id', $chapters->pluck('id'))
+                    ->orderBy('sort')
+                    ->get();
+        
         return Inertia::render('Admin/Pages/Edit', [
+            'chapters' => $chapters,
+            'points' => $points,
             'page' => $page
         ]);
     }

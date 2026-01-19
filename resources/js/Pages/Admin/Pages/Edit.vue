@@ -34,7 +34,7 @@
           <div class="form-group">
             <label for="parent_id">Родительский элемент</label>
             <select v-model="form.parent_id" id="parent_id" class="form-control">
-              <option value="">--- Глава (верхний уровень) ---</option>
+              <option value="0">--- Глава (верхний уровень) ---</option>
               
               <!-- Главы (уровень 0) -->
               <optgroup label="Главы">
@@ -97,6 +97,16 @@
               class="form-control"
             ></textarea>
           </div>
+
+          <div class="form-group">
+            <label for="menu_html">Меню пункта</label>
+            <textarea 
+              v-model="form.menu_html" 
+              id="menu_html" 
+              rows="6" 
+              class="form-control"
+            ></textarea>
+          </div>
         </div>
 
         <div class="form-group">
@@ -143,6 +153,7 @@ const form = useForm({
   content: props.page.content,
   parent_id: props.page.parent_id,
   sort: props.page.sort,
+  menu_html: props.page.menu_html,
   meta_title: props.page.meta_title,
   meta_description: props.page.meta_description,
   is_published: props.page.is_published
@@ -282,6 +293,7 @@ function getPointNumber(point) {
   const pointNum = point.sort ? point.sort.toString().padStart(2, '0') : '00'
   return `${chapterNum}.${pointNum}`
 }
+
 </script>
 
 <style scoped>
