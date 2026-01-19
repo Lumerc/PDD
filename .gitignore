@@ -38,6 +38,7 @@ Thumbs.db
 .npm/
 .phpunit.cache
 composer.lock
+package-lock.json
 
 # Logs
 *.log
