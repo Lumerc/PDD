@@ -113,6 +113,11 @@ class PageController extends Controller
             'is_published' => 'boolean'
         ]);
 
+        // Автогенерация slug если не указан
+        if (empty($validated['slug']) || $validated['slug'] == '-') {
+            $validated['slug'] = Str::slug($validated['title']);
+        }
+
         $page->update($validated);
 
         return redirect()->route('admin.pages.index')
