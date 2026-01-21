@@ -62,7 +62,7 @@ class PageController extends Controller
         ]);
         
         // Автогенерация slug если не указан
-        if (empty($validated['slug'])) {
+        if (empty($validated['slug']) || $validated['slug'] == '-') {
             $validated['slug'] = Str::slug($validated['title']);
         }
         
