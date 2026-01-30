@@ -20,10 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Принудительно используем HTTPS в продакшене
-        if ($this->app->environment('production') || 
-            config('app.force_https') === true) {
-            URL::forceScheme('https');
+        if (app()->environment('production') || app()->environment('staging')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
         }
     }
 }
