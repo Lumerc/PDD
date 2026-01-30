@@ -6,11 +6,13 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\UploadController;
 // Публичные маршруты
+/*
 Route::get('/', function () 
 {
     return Inertia::render('Home');
 });
-
+*/
+Route::get('/', [PageController::class, 'home'])->name('home');
 
 Route::get('/adminenter', [AdminController::class, 'enter'])->name('admin.enter');
 Route::post('/adminenter', [AdminController::class, 'login'])->name('admin.login');
@@ -35,8 +37,8 @@ Route::middleware('auth')->prefix('adminenter')->name('admin.')->group(function 
     Route::get('/pages/{page}', [PageController::class, 'show'])->name('pages.show');
 });
 
-// Динамические страницы - В САМЫЙ КОНЕЦ!
-Route::get('/{slug}', function ($slug) 
-{
-    return Inertia::render('Page', ['slug' => $slug]);
-});
+
+// Динамические маршруты страниц (должен быть ПОСЛЕДНИМ!)
+Route::get('/{slug}', [PageController::class, 'show'])
+    ->where('slug', '^(?!adminenter|login|register|dashboard).*') // Исключаем админ-маршруты
+    ->name('pages.show');

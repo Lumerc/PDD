@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Admin/SimpleUploadController.php
 
 namespace App\Http\Controllers;
 
@@ -11,7 +10,6 @@ class UploadController extends Controller
 {
     public function upload(Request $request)
     {
-        // Временный упрощенный контроллер
         \Log::info('Upload request received', [
             'hasFile' => $request->hasFile('file'),
             'files' => $request->allFiles(),
@@ -23,10 +21,7 @@ class UploadController extends Controller
         if (!$file) {
             return response()->json(['error' => 'No file'], 422);
         }
-        
 
-        
-        // Сохраняем файл
         $path = $file->store('uploads', 'public');
         $url = asset('storage/' . $path);
         
