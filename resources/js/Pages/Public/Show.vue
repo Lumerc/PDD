@@ -181,6 +181,11 @@ article.pdd-content h1
     justify-content: space-between;
 }
 
+p 
+{
+    padding-bottom: 20px;
+}
+
 td 
 {
     padding: 5px;
